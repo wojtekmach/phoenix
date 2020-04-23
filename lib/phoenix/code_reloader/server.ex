@@ -77,9 +77,11 @@ defmodule Phoenix.CodeReloader.Server do
           :exit, {:shutdown, 1} ->
             :error
 
-          kind, reason ->
-            IO.puts(Exception.format(kind, reason, __STACKTRACE__))
-            :error
+          :error, exception ->
+            {:error, exception, __STACKTRACE__}
+
+          # TODO:
+          # :throw, reason ->
         end
       end)
 
@@ -91,6 +93,9 @@ defmodule Phoenix.CodeReloader.Server do
         :error ->
           write_backup(backup)
           {:error, out}
+
+        {:error, exception, stacktrace} ->
+          {:error, exception, stacktrace}
       end
 
     Enum.each(froms, &GenServer.reply(&1, reply))

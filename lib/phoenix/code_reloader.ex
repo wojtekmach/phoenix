@@ -69,11 +69,16 @@ defmodule Phoenix.CodeReloader do
     case opts[:reloader].(conn.private.phoenix_endpoint) do
       :ok ->
         conn
+
       {:error, output} ->
         conn
         |> put_resp_content_type("text/html")
         |> send_resp(500, template(output))
         |> halt()
+
+      # TODO: ensure this works when debugger is turned off
+      {:error, exception, stacktrace} ->
+        reraise exception, stacktrace
     end
   end
 
