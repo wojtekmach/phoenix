@@ -1,4 +1,32 @@
 defmodule Phoenix.CodeReloader do
+  defmodule StaleFilesError do
+    defexception [:app, :files]
+
+    @impl true
+    def message(%{app: app, files: files}) do
+      """
+      could not compile application: #{app}.
+
+      You must restart your server after changing the following config or lib files:
+
+        * #{Enum.map_join(files, "\n  * ", &Path.relative_to_cwd/1)}
+
+      """
+    end
+
+    defimpl Plug.Exception do
+      def status(_) do
+        500
+      end
+
+      def actions(_) do
+        [
+          %{label: "Restart", handler: :restart}
+        ]
+      end
+    end
+  end
+
   @moduledoc """
   A plug and module to handle automatic code reloading.
 
